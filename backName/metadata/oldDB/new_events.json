@@ -1,0 +1,413 @@
+{
+    "database": "newDB",
+    "metadata_only": false,
+    "parts": {
+     "default": [
+      {
+       "name": "201904_1_1_0"
+      },
+      {
+       "name": "201904_2_2_0"
+      },
+      {
+       "name": "201905_3_3_0"
+      },
+      {
+       "name": "201905_4_4_0"
+      },
+      {
+       "name": "201906_5_5_0"
+      },
+      {
+       "name": "201906_6_6_0"
+      },
+      {
+       "name": "201907_7_7_0"
+      },
+      {
+       "name": "201907_8_8_0"
+      },
+      {
+       "name": "201908_10_10_0"
+      },
+      {
+       "name": "201908_9_9_0"
+      },
+      {
+       "name": "201909_11_11_0"
+      },
+      {
+       "name": "201909_12_12_0"
+      },
+      {
+       "name": "201910_13_13_3"
+      },
+      {
+       "name": "201910_14_14_0"
+      },
+      {
+       "name": "201911_15_15_1"
+      },
+      {
+       "name": "201911_16_16_4"
+      },
+      {
+       "name": "201912_17_17_41"
+      },
+      {
+       "name": "201912_18_18_0"
+      },
+      {
+       "name": "202001_19_19_1"
+      },
+      {
+       "name": "202001_20_20_26"
+      },
+      {
+       "name": "202002_21_21_32"
+      },
+      {
+       "name": "202002_22_22_2"
+      },
+      {
+       "name": "202003_23_23_18"
+      },
+      {
+       "name": "202003_24_24_3"
+      },
+      {
+       "name": "202004_25_25_3"
+      },
+      {
+       "name": "202004_26_26_1"
+      },
+      {
+       "name": "202005_27_27_2"
+      },
+      {
+       "name": "202005_28_28_1"
+      },
+      {
+       "name": "202006_29_29_10"
+      },
+      {
+       "name": "202006_30_30_2"
+      },
+      {
+       "name": "202007_31_31_9"
+      },
+      {
+       "name": "202007_32_32_2"
+      },
+      {
+       "name": "202008_33_33_41"
+      },
+      {
+       "name": "202008_34_34_11"
+      },
+      {
+       "name": "202009_35_35_29"
+      },
+      {
+       "name": "202009_36_36_2"
+      },
+      {
+       "name": "202010_37_37_2"
+      },
+      {
+       "name": "202010_38_38_18"
+      },
+      {
+       "name": "202010_39_39_0"
+      },
+      {
+       "name": "202011_40_40_1"
+      },
+      {
+       "name": "202011_41_41_1"
+      },
+      {
+       "name": "202011_42_42_29"
+      },
+      {
+       "name": "202012_43_43_2"
+      },
+      {
+       "name": "202012_44_44_17"
+      },
+      {
+       "name": "202101_45_45_2"
+      },
+      {
+       "name": "202101_46_46_3"
+      },
+      {
+       "name": "202101_47_47_14"
+      },
+      {
+       "name": "202102_48_48_5"
+      },
+      {
+       "name": "202102_49_49_81"
+      },
+      {
+       "name": "202102_50_50_2"
+      },
+      {
+       "name": "202103_51_51_74"
+      },
+      {
+       "name": "202103_52_52_2"
+      },
+      {
+       "name": "202103_53_53_10"
+      },
+      {
+       "name": "202104_54_54_0"
+      },
+      {
+       "name": "202104_55_55_49"
+      },
+      {
+       "name": "202104_56_56_6"
+      },
+      {
+       "name": "202104_57_57_2"
+      },
+      {
+       "name": "202104_58_58_0"
+      },
+      {
+       "name": "202105_59_59_2"
+      },
+      {
+       "name": "202105_60_60_30"
+      },
+      {
+       "name": "202105_61_61_17"
+      },
+      {
+       "name": "202106_62_62_59"
+      },
+      {
+       "name": "202106_63_63_2"
+      },
+      {
+       "name": "202106_64_64_188"
+      },
+      {
+       "name": "202107_65_65_126"
+      },
+      {
+       "name": "202107_66_66_132"
+      },
+      {
+       "name": "202107_67_67_2"
+      },
+      {
+       "name": "202108_68_68_0"
+      },
+      {
+       "name": "202108_69_69_208"
+      },
+      {
+       "name": "202108_70_70_158"
+      },
+      {
+       "name": "202108_71_71_2"
+      },
+      {
+       "name": "202109_72_72_122"
+      },
+      {
+       "name": "202109_73_73_2"
+      },
+      {
+       "name": "202109_74_74_140"
+      },
+      {
+       "name": "202109_75_75_0"
+      },
+      {
+       "name": "202110_76_76_267"
+      },
+      {
+       "name": "202110_77_77_0"
+      },
+      {
+       "name": "202110_78_78_133"
+      },
+      {
+       "name": "202110_79_79_2"
+      },
+      {
+       "name": "202111_80_80_1239"
+      },
+      {
+       "name": "202111_81_81_2"
+      },
+      {
+       "name": "202111_82_82_2"
+      },
+      {
+       "name": "202112_83_83_1"
+      },
+      {
+       "name": "202112_84_84_2"
+      },
+      {
+       "name": "202112_85_85_3"
+      },
+      {
+       "name": "202112_86_86_10767"
+      },
+      {
+       "name": "202201_87_87_18429"
+      },
+      {
+       "name": "202201_88_88_3"
+      },
+      {
+       "name": "202201_89_89_19580"
+      },
+      {
+       "name": "202201_90_90_7393"
+      },
+      {
+       "name": "202202_91_91_16502"
+      },
+      {
+       "name": "202202_92_92_132"
+      },
+      {
+       "name": "202202_93_93_19266"
+      },
+      {
+       "name": "202203_94_94_20802"
+      },
+      {
+       "name": "202203_95_95_23186"
+      },
+      {
+       "name": "202203_96_96_14715"
+      },
+      {
+       "name": "202203_97_97_5"
+      },
+      {
+       "name": "202204_100_100_1245"
+      },
+      {
+       "name": "202204_101_101_0"
+      },
+      {
+       "name": "202204_98_98_20105"
+      },
+      {
+       "name": "202204_99_99_19694"
+      },
+      {
+       "name": "202205_102_102_18613"
+      },
+      {
+       "name": "202205_103_103_4112"
+      },
+      {
+       "name": "202205_104_104_4246"
+      },
+      {
+       "name": "202205_105_105_43"
+      },
+      {
+       "name": "202206_106_106_6406"
+      },
+      {
+       "name": "202206_107_107_5785"
+      },
+      {
+       "name": "202206_108_108_4370"
+      },
+      {
+       "name": "202206_109_109_1585"
+      },
+      {
+       "name": "202206_110_110_5"
+      },
+      {
+       "name": "202207_111_111_5892"
+      },
+      {
+       "name": "202207_112_112_3207"
+      },
+      {
+       "name": "202207_113_113_2429"
+      },
+      {
+       "name": "202207_114_114_7"
+      },
+      {
+       "name": "202208_115_115_4773"
+      },
+      {
+       "name": "202208_116_116_5595"
+      },
+      {
+       "name": "202208_117_117_2759"
+      },
+      {
+       "name": "202208_118_118_2533"
+      },
+      {
+       "name": "202208_119_119_1655"
+      },
+      {
+       "name": "202208_120_121_1605"
+      },
+      {
+       "name": "202208_122_122_0"
+      },
+      {
+       "name": "202209_123_123_3654"
+      },
+      {
+       "name": "202209_124_124_2914"
+      },
+      {
+       "name": "202209_125_125_2825"
+      },
+      {
+       "name": "202209_126_126_2711"
+      },
+      {
+       "name": "202209_127_127_3430"
+      },
+      {
+       "name": "202209_128_128_1888"
+      },
+      {
+       "name": "202209_129_129_83"
+      },
+      {
+       "name": "202210_130_130_3107"
+      },
+      {
+       "name": "202210_131_131_2212"
+      },
+      {
+       "name": "202210_132_132_2418"
+      },
+      {
+       "name": "202210_133_133_2092"
+      },
+      {
+       "name": "202210_134_138_1"
+      }
+     ]
+    },
+    "query": "CREATE TABLE newDB.new_events UUID '6az27339-b061-47c7-87ea-46944ca2bfc0' (`id` UUID, `eventType` Enum8('lead' = 1, 'click' = 2, 'incidence' = 3, 'domonetization' = 4, 'capacity' = 5, 'webmasterRate' = 6), `leadId` Nullable(UUID), `leadEvent` LowCardinality(Nullable(String)), `offerId` Nullable(UUID), `webmasterId` Nullable(UUID), `advertiserId` Nullable(UUID), `managerId` Nullable(UUID), `agentId` Nullable(UUID), `externalWebmasterId` Nullable(String), `isLead` Int8 DEFAULT 0, `isIntegrated` Int8 DEFAULT 0, `isSpammed` Int8 DEFAULT 0, `isAccept` Int8 DEFAULT 0, `isCancel` Int8 DEFAULT 0, `isRedemption` Int8 DEFAULT 0, `isInHouse` Int8 DEFAULT 0, `withdrawType` Nullable(Enum8('accept' = 1, 'request' = 2, 'paid' = 3, 'sale' = 4, 'install' = 5)), `globalSource` Nullable(String), `integrationId` Nullable(UUID), `moneyAdvertiserProcessing` Float64 DEFAULT 0, `moneyAdvertiserCancelled` Float64 DEFAULT 0, `moneyWebmasterAwaiting` Float64 DEFAULT 0, `subWebmasterRefill` Float64 DEFAULT 0, `transactionWrittenOff` Float64 DEFAULT 0, `transactionRefill` Float64 DEFAULT 0, `isFlowClick` Int8 DEFAULT 0, `isTransitClick` Int8 DEFAULT 0, `isLandingClick` Int8 DEFAULT 0, `isUniqueClick` Int8 DEFAULT 0, `signature` Nullable(String), `userIp` Nullable(String), `userBrowser` Nullable(String), `userBrowserVersion` Nullable(String), `userDeviceType` Nullable(String), `userOs` Nullable(String), `slaveIp` Nullable(String), `utmSource` Nullable(String), `utmCampaign` Nullable(String), `utmContent` Nullable(String), `utmMedium` Nullable(String), `utmTerm` Nullable(String), `flowId` Nullable(UUID), `pageId` Nullable(UUID), `bunchId` Nullable(UUID), `countries` Array(UUID), `categories` Array(UUID), `eventCreatedAt` DateTime64(6, 'UTC'), `createdAt` DateTime64(6, 'UTC') DEFAULT now(), `moneySubWebmasterAwaiting` Float64 DEFAULT 0, `isHold` Int8 DEFAULT 0, `isFilteredSpam` Int8 DEFAULT 0, `spamReason` Nullable(Int8) DEFAULT NULL, `cancelReason` Nullable(Int8) DEFAULT NULL, `calls` Int8 DEFAULT 0, `isRecall` Int8 DEFAULT 0, `firstCallPeriod` Int32 DEFAULT 0, `currency` Nullable(Enum8('usd' = 1, 'rub' = 2, 'eur' = 3)), `incidenceId` Nullable(UUID) DEFAULT NULL, `incidenceReason` Nullable(Int8) DEFAULT NULL, `incidenceDifference` Int32 DEFAULT 0, `domonetizationClick` Int16 DEFAULT 0, `domonetizationRefill` Float64 DEFAULT 0, `domonetizationCommission` Float64 DEFAULT 0, `domonetizationTotal` Float64 DEFAULT 0, `domonetizationAlias` Nullable(Enum8('oneprofit' = 1)) DEFAULT NULL, `isUniqueFlowClick` Int8 DEFAULT 0, `isUniqueTransitClick` Int8 DEFAULT 0, `isUniqueLandingClick` Int8 DEFAULT 0, `isNew` Int8 DEFAULT 0, `advertiserCapacity` Nullable(Int32) DEFAULT 0, `advertiserOfferCapacity` Nullable(Int32) DEFAULT 0, `webmasterCapacity` Nullable(Int32) DEFAULT 0, `webmasterRate` Nullable(Float64) DEFAULT 0) ENGINE = MergeTree PARTITION BY toYYYYMM(eventCreatedAt) ORDER BY eventCreatedAt SETTINGS index_granularity = 8192",
+    "size": {
+     "default": 9815772664
+    },
+    "table": "new_events",
+    "total_bytes": 9815078770
+   }
