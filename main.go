@@ -116,6 +116,7 @@ func regUUID(Meta string) {
 	payload["database"] = initData.NewDBName
 	payload["table"] = initData.NewTableName
 	writeMeta(payload, Meta)
+	fmt.Printf("regUUID\n")
 }
 
 func writeMeta(File map[string]interface{}, Meta string) {
@@ -138,6 +139,7 @@ func writeMeta(File map[string]interface{}, Meta string) {
 		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+initData.NewTableName+".json", jsonString, 0644)
 		userChown(filePath.MetaDir + initData.NewDBName + "/" + initData.NewTableName + ".json")
 	}
+	fmt.Printf("writeMeta\n")
 }
 
 // Получаю данные, создаю Мету.
@@ -165,6 +167,7 @@ func getData(backupName string, dbName string, tableName string) {
 		createDir(filePath.MetaDir+initData.NewDBName, filePath.ShadowDir+initData.NewDBName+"/"+initData.NewTableName)
 		oneTable(filePath.MetaDBDir + tableName)
 	}
+	fmt.Printf("getData\n")
 }
 
 // func renameDBDir(srcM string, dstM string, srcS string, dstS string) {
@@ -209,6 +212,7 @@ func allTables(metaDir string) {
 	}
 	copyShadow(filePath.ShadowDBDir, filePath.ShadowDir+initData.NewDBName)
 	// fmt.Printf("UUID: %s\nDbName: %s\nTableName: %s\n", generalData.UUID, generalData.DbName, generalData.Tablename)
+	fmt.Printf("allTables\n")
 }
 
 func oneTable(metaTables string) {
@@ -224,8 +228,9 @@ func oneTable(metaTables string) {
 
 	generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string), Tablename: payload["table"].(string)}
 	regUUID("")
-	fmt.Printf("UUID: %s\nDbName: %s\nTableName: %s\n", generalData.UUID, generalData.DbName, generalData.Tablename)
+	// fmt.Printf("UUID: %s\nDbName: %s\nTableName: %s\n", generalData.UUID, generalData.DbName, generalData.Tablename)
 	copyShadow(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.OldTableName)
+	fmt.Printf("oneTable\n")
 
 }
 func createDir(Meta, Shadow string) {
@@ -246,25 +251,38 @@ func createDir(Meta, Shadow string) {
 		}
 		userChown(Shadow)
 	}
+	fmt.Printf("ucreateDir\n")
 }
 
-func userChown(File string) {
+func userChown(File string) error {
 	userD, err := user.Lookup(userDataOwner)
 	if err != nil {
-		return
+		return err
 	}
 	GidStr, _ := userD.GroupIds()
 	Gid, _ := strconv.Atoi(GidStr[0])
 	Uid, _ := strconv.Atoi(*&userD.Uid)
 	err = os.Chown(File, Uid, Gid)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
-
+	fmt.Printf("userChown\n")
+	return err
 }
+
+// func ChownR(path string, uid, gid int) error {
+// 	return filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
+// 		if err == nil {
+// 			err = os.Chown(name, uid, gid)
+// 		}
+// 		return err
+// 	})
+// }
 
 func copyShadow(srcDir, dest string) {
 	err := cp.Copy(srcDir, dest)
-	fmt.Println(err) // nil
-	fmt.Println(dest)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("copyShadow %s/n", dest)
 }
