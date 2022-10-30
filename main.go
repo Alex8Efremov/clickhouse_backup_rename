@@ -49,7 +49,7 @@ var (
 	uuidData      UUID
 	payload       map[string]interface{}
 	filePath      FilePath
-	userDataOwner string = "efremov"
+	userDataOwner string = "clickhouse"
 
 	// app         = kingpin.New("main", "Enter your Database!")
 	// databaseOld = app.Arg("OldDB", "Old DB").Required().String()
@@ -144,8 +144,8 @@ func writeMeta(File map[string]interface{}, Meta string) {
 
 // Получаю данные, создаю Мету.
 func getData(backupName string, dbName string, tableName string) {
-	// mainDir := "/var/lib/clickhouse/backup/" + backupName
-	mainDir := "/home/efremov/myprojecs/golang/clickhouse/backup/" + backupName
+	mainDir := "/var/lib/clickhouse/backup/" + backupName
+	// mainDir := "/home/efremov/myprojecs/golang/clickhouse/backup/" + backupName
 	filePath = FilePath{
 		MetaDir:        mainDir + "/metadata/",
 		MetaDBDir:      mainDir + "/metadata/" + dbName + "/",
