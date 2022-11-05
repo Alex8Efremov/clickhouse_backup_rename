@@ -5,16 +5,17 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
-	cp "github.com/otiai10/copy"
 )
 
 type TableData struct {
@@ -57,10 +58,9 @@ var (
 )
 
 func main() {
-	// kingpin.MustParse(app.Parse(os.Args))
-
 	flagMain()
 	getData(initData.Backup, initData.OldDBName, initData.OldTableName)
+	distributor()
 }
 
 func flagMain() {
@@ -73,7 +73,7 @@ func flagMain() {
 	flag.Parse()
 	if len(flag.Args()) <= 0 {
 		log.Fatal("\nUse: main -d string -t string <backup_name>")
-		return
+		// return err
 	}
 	if *dbFlag != "" {
 		sDb = strings.Split(*dbFlag, ":")
@@ -91,16 +91,25 @@ func flagMain() {
 		return
 	} else {
 		sTb = strings.Split(*tableFlag, ":")
+		if len(sTb) <= 1 {
+			sTb[0] = *tableFlag
+			fmt.Println(sTb)
+		}
 	}
 	// НУЖНО СОЗДАТЬ УСЛОВИЕ КОГДА КОПИРУЕМ ОДНУ ТАБЛИЦУ В НОВУЮ БД
 	if len(sDb) >= 2 {
-		initData = GetInitData{OldDBName: sDb[0], NewDBName: sDb[1], OldTableName: sTb[0], NewTableName: sTb[1], Backup: flag.Args()[0]}
-		return
+		if len(sTb) >= 2 {
+			initData = GetInitData{OldDBName: sDb[0], NewDBName: sDb[1], OldTableName: sTb[0], NewTableName: sTb[1], Backup: flag.Args()[0]}
+			return
+		} else {
+			initData = GetInitData{OldDBName: sDb[0], NewDBName: sDb[1], OldTableName: sTb[0], Backup: flag.Args()[0]}
+			return
+		}
 	} else if len(sDb) <= 1 {
 		initData = GetInitData{OldDBName: sDb[0], OldTableName: sTb[0], NewTableName: sTb[1], Backup: flag.Args()[0]}
 		return
 	}
-	log.Fatal("Use 'main -d string -t string <backup_name>'")
+	log.Fatal("Use 'main -d string:string -t string:string <backup_name>'")
 	// fmt.Println(initData.OldDBName, initData.OldTableName, initData.NewDBName, initData.NewTableName, initData.Backup)
 }
 
@@ -114,44 +123,48 @@ func getData(backupName string, dbName string, tableName string) {
 		ShadowDir:      mainDir + "/shadow/",
 		ShadowDBDir:    mainDir + "/shadow/" + dbName + "/",
 		ShadowTableDir: mainDir + "/shadow/" + dbName + "/" + tableName}
+	fmt.Printf("getData\n")
+}
+
+func distributor() {
 	// здесь немного сокращаю код. Создаю Директории.
 	// Если нет меты(таблицы), тогда копируем польностью БД (со старыми таблицами)
 	// Если таблицы есть,но нет новой БД значит мету не трогаем (создаём в старой БД)
 	// Или содаём новую бд с новой метой.(таблицами)
-	if tableName == "" {
+	if initData.OldTableName == "" {
+		// Если нет таблиц, копирую всю базу, с одинаковыми названиями таблиц.
 		createDir(filePath.MetaDir+initData.NewDBName, filePath.ShadowDir+initData.NewDBName)
 		allTables(filePath.MetaDBDir)
-		fmt.Printf("Use all Tables %s of\n%s\n", dbName, backupName)
+		fmt.Printf("Use all Tables %s of\n%s\n", initData.OldDBName, initData.Backup)
 	} else if initData.NewDBName == "" {
+		// Если нет новой бд, тогда создаем таблицу в той-же базе данных (одну таблицу копируем)
 		createDir("", filePath.ShadowDBDir+initData.NewTableName)
-		oneTable(filePath.MetaDBDir + tableName)
-	} else {
+		oneTable(filePath.MetaDBDir + initData.OldTableName)
+	} else if initData.NewTableName != "" {
 		createDir(filePath.MetaDir+initData.NewDBName, filePath.ShadowDir+initData.NewDBName+"/"+initData.NewTableName)
-		oneTable(filePath.MetaDBDir + tableName)
+		oneTableNewDB(filePath.MetaDBDir + initData.OldTableName)
+		// Производим замену UUID/database/table во всей мете
+		replacer := strings.NewReplacer(generalData.DbName, initData.NewDBName, uuidData.oldUUID, uuidData.newUUID, generalData.Tablename, initData.NewTableName)
+		payload["table"] = initData.NewTableName
+		payload["database"] = initData.NewDBName
+		payload["query"] = replacer.Replace(payload["query"].(string))
+		writeMeta(payload, filePath.MetaDir+initData.NewDBName+"/"+initData.NewTableName+".json")
+		copyDir(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.NewTableName)
+		userChown(filePath.ShadowDir + initData.NewDBName)
+		fmt.Printf("oneTableNewDB\n")
+	} else {
+		createDir(filePath.MetaDir+initData.NewDBName, filePath.ShadowDir+initData.NewDBName+"/"+initData.OldTableName)
+		oneTableNewDB(filePath.MetaDBDir + initData.OldTableName)
+		// Производим замену UUID/database/table во всей мете
+		replacer := strings.NewReplacer(generalData.DbName, initData.NewDBName, uuidData.oldUUID, uuidData.newUUID)
+		payload["database"] = initData.NewDBName
+		payload["query"] = replacer.Replace(payload["query"].(string))
+		writeMeta(payload, filePath.MetaDir+initData.NewDBName+"/"+initData.OldTableName+".json")
+		copyDir(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.OldTableName)
+		userChown(filePath.ShadowDir + initData.NewDBName)
+		fmt.Printf("oneTableNewDB\n")
 	}
-	fmt.Printf("getData\n")
 }
-
-// func renameDBDir(srcM string, dstM string, srcS string, dstS string) {
-// 	fmt.Println(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.NewTableName)
-// 	err := os.Rename(srcM, dstM)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return
-// 	}
-// 	err2 := os.Rename(srcS, dstS)
-// 	if err2 != nil {
-// 		fmt.Println(err2, "firces")
-// 		return
-// 	}
-// 	// if len(initData.NewTableName) != 0 {
-// 	err3 := os.Rename(dstS+"/"+initData.OldTableName, filePath.ShadowDir+initData.NewDBName+"/"+initData.NewTableName)
-// 	if err3 != nil {
-// 		fmt.Println(err3)
-// 		return
-// 	}
-// 	// }
-// }
 
 func allTables(metaDir string) {
 	jsonfiles, err := ioutil.ReadDir(metaDir)
@@ -168,74 +181,77 @@ func allTables(metaDir string) {
 			log.Fatal("Error during Unmarshal(): ", err)
 		}
 		generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string)}
-		regUUID(file.Name())
+		regUUID()
+		// Производим замену UUID/database во всей мете
+		replacer := strings.NewReplacer(generalData.DbName, initData.NewDBName)
+		payload["query"] = replacer.Replace(payload["query"].(string))
+		payload["database"] = initData.NewDBName
+		writeMeta(payload, filePath.MetaDir+initData.NewDBName+"/"+file.Name())
 
 	}
-
-	// copyShadow(filePath.ShadowDBDir, filePath.ShadowDir+initData.NewDBName)
+	copyDir(filePath.ShadowDBDir, filePath.ShadowDir+initData.NewDBName)
 	fmt.Printf("TABLE: %s.", payload["table"].(string))
 }
+func oneTableNewDB(metaTables string) {
+	jsonMain, err := ioutil.ReadFile(metaTables + ".json")
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
+	}
+	err = json.Unmarshal(jsonMain, &payload)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
+	generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string), Tablename: payload["table"].(string)}
+	regUUID()
 
+}
 func oneTable(metaTables string) {
 	jsonMain, err := ioutil.ReadFile(metaTables + ".json")
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}
-
 	err = json.Unmarshal(jsonMain, &payload)
 	if err != nil {
 		log.Fatal("Error during Unmarshal(): ", err)
 	}
 
 	generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string), Tablename: payload["table"].(string)}
-	regUUID("")
-	// fmt.Printf("UUID: %s\nDbName: %s\nTableName: %s\n", generalData.UUID, generalData.DbName, generalData.Tablename)
-	// copyShadow(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.OldTableName)
+	regUUID()
+	// Производим замену UUID/table во всей мете
+	replacer := strings.NewReplacer(uuidData.oldUUID, uuidData.newUUID, generalData.Tablename, initData.NewTableName)
+	payload["table"] = initData.NewTableName
+	payload["query"] = replacer.Replace(payload["query"].(string))
+	writeMeta(payload, filePath.MetaDBDir+initData.NewTableName+".json")
+	copyDir(filePath.ShadowTableDir, filePath.ShadowDBDir+initData.NewTableName)
 	fmt.Printf("oneTable\n")
 
 }
-func regUUID(Meta string) {
+
+func regUUID() {
 	// Здесть я создаю новый UUID на основе старого, для предотвращения создания множества директорий в /storage/ и изменяю Мету.
 	r, _ := regexp.Compile(`((\d)|(\w)){8}-((\d)|(\w)){4}-((\d)|(\w)){4}-((\d)|(\w)){4}-((\d)|(\w)){12}`)
 	newID := uuid.New().String()
-	// Если UUID reqexp забрал, тогда ничинаем изменение.
+	// Если UUID reqexp забрал, тогда его изменяем.
 	if len(r.FindString(generalData.UUID)) > 0 {
 		uuidData = UUID{shortOldUUID: r.FindString(generalData.UUID)[:3], oldUUID: r.FindString(generalData.UUID), shortNewUUID: newID[:3], newUUID: newID}
 		uuidData.newUUID = strings.Replace(uuidData.newUUID, uuidData.shortNewUUID, uuidData.shortOldUUID, -1)
 	}
-	// Производим замену UUID/database/table во всей мете
-	replacer := strings.NewReplacer(uuidData.oldUUID, uuidData.newUUID, generalData.DbName, initData.NewDBName, generalData.Tablename, initData.NewTableName)
-	payload["query"] = replacer.Replace(payload["query"].(string))
-	payload["database"] = initData.NewDBName
-	// Если таблица пустая, название не меняем.
-	if initData.NewTableName != "" {
-		payload["table"] = initData.NewTableName
-	}
-	writeMeta(payload, Meta)
-	fmt.Printf("regUUID %s, %s\n", uuidData.shortOldUUID, uuidData.shortNewUUID)
 }
-func writeMeta(File map[string]interface{}, Meta string) {
+
+func writeMeta(File map[string]interface{}, Path string) {
 	// Оставить просто функцию без условий, условия будут на предыдущем шаге.
 	jsonString, err := json.MarshalIndent(File, "   ", " ")
 	if err != nil {
 		log.Fatal("JSON marshaling failed:", err)
 	}
-	// Если нет новой бд, тогда создаем таблицу в той-же базе данных (одну таблицу копируем)
-	// Если установлена мета(список всех таблиц), тогда копируем в новую БД все таблицы
-	// Если нет меты(списка таблиц), тогда копируем одну таблицу в Новую БД
-	// НУЖНО СОЗДАТЬ УСЛОВИЕ КОГДА КОПИРУЕМ ОДНУ ТАБЛИЦУ В НОВУЮ БД
-	if initData.NewDBName == "" {
-		ioutil.WriteFile(filePath.MetaDBDir+initData.NewTableName+".json", jsonString, 0644)
-		userChown(filePath.MetaDBDir + initData.NewTableName + ".json")
-	} else if Meta != "" {
-		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+Meta, jsonString, 0644)
-		userChown(filePath.MetaDir + initData.NewDBName + "/" + Meta)
-	} else {
-		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+initData.NewTableName+".json", jsonString, 0644)
-		userChown(filePath.MetaDir + initData.NewDBName + "/" + initData.NewTableName + ".json")
+	err = ioutil.WriteFile(Path, jsonString, 0644)
+	if err != nil {
+		log.Fatal("JSON marshaling failed WriteFile:", err)
 	}
+	userChown(Path)
 	fmt.Printf("writeMeta\n")
 }
+
 func createDir(Meta, Shadow string) {
 	if Meta == "" {
 	} else {
@@ -269,23 +285,65 @@ func userChown(File string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("userChown\n")
 	return err
 }
 
-// func ChownR(path string, uid, gid int) error {
-// 	return filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
-// 		if err == nil {
-// 			err = os.Chown(name, uid, gid)
-// 		}
-// 		return err
-// 	})
-// }
+func copyDir(src string, dst string) error {
+	var err error
+	var fds []os.FileInfo
+	var srcinfo os.FileInfo
 
-func copyShadow(srcDir, dest string) {
-	err := cp.Copy(srcDir, dest)
-	if err != nil {
-		log.Fatal(err)
+	if srcinfo, err = os.Stat(src); err != nil {
+		return err
 	}
-	fmt.Printf("copyShadow %s/n", dest)
+
+	if err = os.MkdirAll(dst, srcinfo.Mode()); err != nil {
+		return err
+	}
+	userChown(dst)
+
+	if fds, err = ioutil.ReadDir(src); err != nil {
+		return err
+	}
+	for _, fd := range fds {
+		srcfp := path.Join(src, fd.Name())
+		dstfp := path.Join(dst, fd.Name())
+
+		if fd.IsDir() {
+			if err = copyDir(srcfp, dstfp); err != nil {
+				fmt.Println(err)
+			}
+		} else {
+			if err = copyFile(srcfp, dstfp); err != nil {
+				fmt.Println(err)
+			}
+		}
+		userChown(dstfp)
+	}
+	return nil
+}
+
+func copyFile(src, dst string) error {
+	var err error
+	var srcfd *os.File
+	var dstfd *os.File
+	var srcinfo os.FileInfo
+
+	if srcfd, err = os.Open(src); err != nil {
+		return err
+	}
+	defer srcfd.Close()
+
+	if dstfd, err = os.Create(dst); err != nil {
+		return err
+	}
+	defer dstfd.Close()
+
+	if _, err = io.Copy(dstfd, srcfd); err != nil {
+		return err
+	}
+	if srcinfo, err = os.Stat(src); err != nil {
+		return err
+	}
+	return os.Chmod(dst, srcinfo.Mode())
 }
