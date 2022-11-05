@@ -10,7 +10,7 @@ build:
 	@go build -o ${APP} *.go 
 
 up: build
-	@./${APP} -d oldDB:newName  backName
+	@./${APP} -d flypost_db:fly_test backName
 	# @./${APP} -d dbName:newDB -t second_table:new_events backName
 down:
 	@rm ${APP} go.mod

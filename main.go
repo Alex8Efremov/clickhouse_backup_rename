@@ -104,44 +104,6 @@ func flagMain() {
 	// fmt.Println(initData.OldDBName, initData.OldTableName, initData.NewDBName, initData.NewTableName, initData.Backup)
 }
 
-func regUUID(Meta string) {
-	// Здесть я создаю новый UUID на основе старого, для предотвращения создания множества директорий в /storage/ и изменяю Мету.
-
-	r, _ := regexp.Compile(`((\d)|(\w)){8}-((\d)|(\w)){4}-((\d)|(\w)){4}-((\d)|(\w)){4}-((\d)|(\w)){12}`)
-	newID := uuid.New().String()
-	uuidData = UUID{shortOldUUID: r.FindString(generalData.UUID)[:3], oldUUID: r.FindString(generalData.UUID), shortNewUUID: newID[:3], newUUID: newID}
-	uuidData.newUUID = strings.Replace(uuidData.newUUID, uuidData.shortNewUUID, uuidData.shortOldUUID, -1)
-	replacer := strings.NewReplacer(uuidData.oldUUID, uuidData.newUUID, generalData.DbName, initData.NewDBName, generalData.Tablename, initData.NewTableName)
-	payload["query"] = replacer.Replace(payload["query"].(string))
-	payload["database"] = initData.NewDBName
-	payload["table"] = initData.NewTableName
-	writeMeta(payload, Meta)
-	fmt.Printf("regUUID\n")
-}
-
-func writeMeta(File map[string]interface{}, Meta string) {
-	// Оставить просто функцию без условий, условия будут на предыдущем шаге.
-	jsonString, err := json.MarshalIndent(File, "   ", " ")
-	if err != nil {
-		log.Fatal("JSON marshaling failed:", err)
-	}
-	// Если нет новой бд, тогда создаем таблицу в той-же базе данных (одну таблицу копируем)
-	// Если установлена мета(список всех таблиц), тогда копируем в новую БД все таблицы
-	// Если нет меты(списка таблиц), тогда копируем одну таблицу в Новую БД
-	// НУЖНО СОЗДАТЬ УСЛОВИЕ КОГДА КОПИРУЕМ ОДНУ ТАБЛИЦУ В НОВУЮ БД
-	if initData.NewDBName == "" {
-		ioutil.WriteFile(filePath.MetaDBDir+initData.NewTableName+".json", jsonString, 0644)
-		userChown(filePath.MetaDBDir + initData.NewTableName + ".json")
-	} else if Meta != "" {
-		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+Meta, jsonString, 0644)
-		userChown(filePath.MetaDir + initData.NewDBName + "/" + Meta)
-	} else {
-		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+initData.NewTableName+".json", jsonString, 0644)
-		userChown(filePath.MetaDir + initData.NewDBName + "/" + initData.NewTableName + ".json")
-	}
-	fmt.Printf("writeMeta\n")
-}
-
 // Получаю данные, создаю Мету.
 func getData(backupName string, dbName string, tableName string) {
 	mainDir := "/var/lib/clickhouse/backup/" + backupName
@@ -201,18 +163,17 @@ func allTables(metaDir string) {
 		if err != nil {
 			log.Fatal("Error when opening file: ", err)
 		}
-
 		err = json.Unmarshal(jsonMain, &payload)
 		if err != nil {
 			log.Fatal("Error during Unmarshal(): ", err)
 		}
-
-		generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string), Tablename: payload["table"].(string)}
+		generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string)}
 		regUUID(file.Name())
+
 	}
-	copyShadow(filePath.ShadowDBDir, filePath.ShadowDir+initData.NewDBName)
-	// fmt.Printf("UUID: %s\nDbName: %s\nTableName: %s\n", generalData.UUID, generalData.DbName, generalData.Tablename)
-	fmt.Printf("allTables\n")
+
+	// copyShadow(filePath.ShadowDBDir, filePath.ShadowDir+initData.NewDBName)
+	fmt.Printf("TABLE: %s.", payload["table"].(string))
 }
 
 func oneTable(metaTables string) {
@@ -229,9 +190,51 @@ func oneTable(metaTables string) {
 	generalData = TableData{UUID: payload["query"].(string), DbName: payload["database"].(string), Tablename: payload["table"].(string)}
 	regUUID("")
 	// fmt.Printf("UUID: %s\nDbName: %s\nTableName: %s\n", generalData.UUID, generalData.DbName, generalData.Tablename)
-	copyShadow(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.OldTableName)
+	// copyShadow(filePath.ShadowTableDir, filePath.ShadowDir+initData.NewDBName+"/"+initData.OldTableName)
 	fmt.Printf("oneTable\n")
 
+}
+func regUUID(Meta string) {
+	// Здесть я создаю новый UUID на основе старого, для предотвращения создания множества директорий в /storage/ и изменяю Мету.
+	r, _ := regexp.Compile(`((\d)|(\w)){8}-((\d)|(\w)){4}-((\d)|(\w)){4}-((\d)|(\w)){4}-((\d)|(\w)){12}`)
+	newID := uuid.New().String()
+	// Если UUID reqexp забрал, тогда ничинаем изменение.
+	if len(r.FindString(generalData.UUID)) > 0 {
+		uuidData = UUID{shortOldUUID: r.FindString(generalData.UUID)[:3], oldUUID: r.FindString(generalData.UUID), shortNewUUID: newID[:3], newUUID: newID}
+		uuidData.newUUID = strings.Replace(uuidData.newUUID, uuidData.shortNewUUID, uuidData.shortOldUUID, -1)
+	}
+	// Производим замену UUID/database/table во всей мете
+	replacer := strings.NewReplacer(uuidData.oldUUID, uuidData.newUUID, generalData.DbName, initData.NewDBName, generalData.Tablename, initData.NewTableName)
+	payload["query"] = replacer.Replace(payload["query"].(string))
+	payload["database"] = initData.NewDBName
+	// Если таблица пустая, название не меняем.
+	if initData.NewTableName != "" {
+		payload["table"] = initData.NewTableName
+	}
+	writeMeta(payload, Meta)
+	fmt.Printf("regUUID %s, %s\n", uuidData.shortOldUUID, uuidData.shortNewUUID)
+}
+func writeMeta(File map[string]interface{}, Meta string) {
+	// Оставить просто функцию без условий, условия будут на предыдущем шаге.
+	jsonString, err := json.MarshalIndent(File, "   ", " ")
+	if err != nil {
+		log.Fatal("JSON marshaling failed:", err)
+	}
+	// Если нет новой бд, тогда создаем таблицу в той-же базе данных (одну таблицу копируем)
+	// Если установлена мета(список всех таблиц), тогда копируем в новую БД все таблицы
+	// Если нет меты(списка таблиц), тогда копируем одну таблицу в Новую БД
+	// НУЖНО СОЗДАТЬ УСЛОВИЕ КОГДА КОПИРУЕМ ОДНУ ТАБЛИЦУ В НОВУЮ БД
+	if initData.NewDBName == "" {
+		ioutil.WriteFile(filePath.MetaDBDir+initData.NewTableName+".json", jsonString, 0644)
+		userChown(filePath.MetaDBDir + initData.NewTableName + ".json")
+	} else if Meta != "" {
+		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+Meta, jsonString, 0644)
+		userChown(filePath.MetaDir + initData.NewDBName + "/" + Meta)
+	} else {
+		ioutil.WriteFile(filePath.MetaDir+initData.NewDBName+"/"+initData.NewTableName+".json", jsonString, 0644)
+		userChown(filePath.MetaDir + initData.NewDBName + "/" + initData.NewTableName + ".json")
+	}
+	fmt.Printf("writeMeta\n")
 }
 func createDir(Meta, Shadow string) {
 	if Meta == "" {

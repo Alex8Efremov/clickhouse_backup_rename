@@ -1,0 +1,8 @@
+{
+	"table": "flypost_log",
+	"database": "flypost_db",
+	"parts": {},
+	"query": "CREATE TABLE flypost_db.flypost_log (`url_pattern` String, `ip` String, `time` Float64, `duration` Float32, `memory` UInt32, `user_id` String, `user_agent` String) ENGINE = File('CSV')",
+	"size": null,
+	"metadata_only": false
+}
